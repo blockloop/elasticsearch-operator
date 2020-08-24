@@ -10,7 +10,7 @@ import (
 
 	"github.com/openshift/elasticsearch-operator/pkg/log"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/util/retry"
@@ -265,7 +265,7 @@ func (n *statefulSetNode) replicaCount() (int32, error) {
 func (n *statefulSetNode) isMissing() bool {
 	getNode := &apps.StatefulSet{}
 	if getErr := n.client.Get(context.TODO(), types.NamespacedName{Name: n.name(), Namespace: n.self.Namespace}, getNode); getErr != nil {
-		if errors.IsNotFound(getErr) {
+		if apierrors.IsNotFound(getErr) {
 			return true
 		}
 	}
@@ -282,7 +282,7 @@ func (n *statefulSetNode) create() error {
 	if n.self.ObjectMeta.ResourceVersion == "" {
 		err := n.client.Create(context.TODO(), &n.self)
 		if err != nil {
-			if !errors.IsAlreadyExists(err) {
+			if !apierrors.IsAlreadyExists(err) {
 				return fmt.Errorf("Could not create node resource: %v", err)
 			} else {
 				n.scale()

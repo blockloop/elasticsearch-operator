@@ -12,7 +12,7 @@ import (
 
 	"github.com/openshift/elasticsearch-operator/pkg/log"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -52,7 +52,7 @@ func (er *ElasticsearchRequest) CreateOrUpdateConfigMap(cm *v1.ConfigMap) error 
 	if err == nil {
 		return nil
 	}
-	if !errors.IsAlreadyExists(err) {
+	if !apierrors.IsAlreadyExists(err) {
 		return fmt.Errorf("failure constructing ConfigMap: %w", err)
 	}
 
@@ -72,7 +72,7 @@ func (er *ElasticsearchRequest) CreateOrUpdateConfigMap(cm *v1.ConfigMap) error 
 		return retry.RetryOnConflict(retry.DefaultRetry, func() error {
 			if err := er.client.Get(context.TODO(), types.NamespacedName{Name: current.Name, Namespace: current.Namespace}, current); err != nil {
 				log.Info("Could not get configmap, retrying...", "configmap", cm.Name, "error", err)
-				// FIXME: return structured error and update RetryOnConflict to use errors.Is
+				// FIXME: return structured error and update RetryOnConflict to use apierrors.Is
 				return err
 			}
 
@@ -124,11 +124,11 @@ func (er *ElasticsearchRequest) CreateOrUpdateConfigMaps() (err error) {
 
 	err = er.client.Create(context.TODO(), configmap)
 	if err != nil {
-		if !errors.IsAlreadyExists(err) {
+		if !apierrors.IsAlreadyExists(err) {
 			return fmt.Errorf("Failure constructing Elasticsearch ConfigMap: %v", err)
 		}
 
-		if errors.IsAlreadyExists(err) {
+		if apierrors.IsAlreadyExists(err) {
 			// Get existing configMap to check if it is same as what we want
 			current := configmap.DeepCopy()
 			err = er.client.Get(context.TODO(), types.NamespacedName{Name: current.Name, Namespace: current.Namespace}, current)

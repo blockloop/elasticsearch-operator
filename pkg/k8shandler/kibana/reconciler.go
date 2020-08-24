@@ -16,7 +16,6 @@ import (
 	"github.com/openshift/elasticsearch-operator/pkg/utils"
 	apps "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -187,7 +186,7 @@ func compareKibanaStatus(lhs, rhs []kibana.KibanaStatus) bool {
 func (clusterRequest *KibanaRequest) deleteKibana5Deployment() error {
 	kibana5 := &apps.Deployment{}
 	if err := clusterRequest.Get(clusterRequest.cluster.Name, kibana5); err != nil {
-		if errors.IsNotFound(err) {
+		if apierrors.IsNotFound(err) {
 			return nil
 		}
 		return fmt.Errorf("failed to get kibana 5 deployment: %s", err)
@@ -201,7 +200,7 @@ func (clusterRequest *KibanaRequest) deleteKibana5Deployment() error {
 	}
 
 	if err := clusterRequest.Delete(kibana5); err != nil {
-		if errors.IsNotFound(err) {
+		if apierrors.IsNotFound(err) {
 			return nil
 		}
 		return fmt.Errorf("failed to delete kibana 5 deployment: %s", err)
@@ -248,7 +247,7 @@ func (clusterRequest *KibanaRequest) createOrUpdateKibanaDeployment(proxyConfig 
 	utils.AddOwnerRefToObject(kibanaDeployment, getOwnerRef(clusterRequest.cluster))
 
 	err = clusterRequest.Create(kibanaDeployment)
-	if err != nil && !errors.IsAlreadyExists(err) {
+	if err != nil && !apierrors.IsAlreadyExists(err) {
 		return fmt.Errorf("failed creating Kibana deployment for %q: %v", clusterRequest.cluster.Name, err)
 	}
 
@@ -257,7 +256,7 @@ func (clusterRequest *KibanaRequest) createOrUpdateKibanaDeployment(proxyConfig 
 			current := &apps.Deployment{}
 
 			if err := clusterRequest.Get(kibanaDeployment.Name, current); err != nil {
-				if errors.IsNotFound(err) {
+				if apierrors.IsNotFound(err) {
 					// the object doesn't exist -- it was likely culled
 					// recreate it on the next time through if necessary
 					return nil
@@ -306,7 +305,7 @@ func (clusterRequest *KibanaRequest) getKibanaAnnotations(deployment *apps.Deplo
 	kibanaTrustBundle := &v1.ConfigMap{}
 	kibanaTrustBundleName := types.NamespacedName{Name: constants.KibanaTrustedCAName, Namespace: clusterRequest.cluster.Namespace}
 	if err := clusterRequest.client.Get(context.TODO(), kibanaTrustBundleName, kibanaTrustBundle); err != nil {
-		if !errors.IsNotFound(err) {
+		if !apierrors.IsNotFound(err) {
 			return annotations, err
 		}
 	}
@@ -455,7 +454,7 @@ func (clusterRequest *KibanaRequest) createOrUpdateKibanaService() error {
 	utils.AddOwnerRefToObject(kibanaService, getOwnerRef(clusterRequest.cluster))
 
 	err := clusterRequest.Create(kibanaService)
-	if err != nil && !errors.IsAlreadyExists(err) {
+	if err != nil && !apierrors.IsAlreadyExists(err) {
 		return fmt.Errorf("Failure constructing Kibana service for %q: %v", clusterRequest.cluster.Name, err)
 	}
 

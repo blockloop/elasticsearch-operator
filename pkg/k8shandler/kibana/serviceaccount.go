@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/openshift/elasticsearch-operator/pkg/utils"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/util/retry"
 
 	core "k8s.io/api/core/v1"
@@ -41,14 +41,14 @@ func (clusterRequest *KibanaRequest) CreateOrUpdateServiceAccount(name string, a
 	utils.AddOwnerRefToObject(serviceAccount, getOwnerRef(clusterRequest.cluster))
 
 	if err := clusterRequest.Create(serviceAccount); err != nil {
-		if !errors.IsAlreadyExists(err) {
+		if !apierrors.IsAlreadyExists(err) {
 			return fmt.Errorf("Failure creating %v serviceaccount: %v", serviceAccount.Name, err)
 		}
 
 		current := &core.ServiceAccount{}
 		retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
 			if err = clusterRequest.Get(serviceAccount.Name, current); err != nil {
-				if errors.IsNotFound(err) {
+				if apierrors.IsNotFound(err) {
 					// the object doesn't exist -- it was likely culled
 					// recreate it on the next time through if necessary
 					return nil
@@ -86,7 +86,7 @@ func (clusterRequest *KibanaRequest) RemoveServiceAccount(serviceAccountName str
 	}
 
 	err := clusterRequest.Delete(serviceAccount)
-	if err != nil && !errors.IsNotFound(err) {
+	if err != nil && !apierrors.IsNotFound(err) {
 		return fmt.Errorf("Failure deleting %v service account: %v", serviceAccountName, err)
 	}
 

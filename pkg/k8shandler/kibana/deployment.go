@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/openshift/elasticsearch-operator/pkg/utils"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
@@ -84,7 +84,7 @@ func (clusterRequest *KibanaRequest) RemoveDeployment(deploymentName string) err
 	)
 
 	err := clusterRequest.Delete(deployment)
-	if err != nil && !errors.IsNotFound(err) {
+	if err != nil && !apierrors.IsNotFound(err) {
 		return fmt.Errorf("Failure deleting %v deployment %v", deploymentName, err)
 	}
 

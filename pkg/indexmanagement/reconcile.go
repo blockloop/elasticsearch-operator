@@ -11,7 +11,7 @@ import (
 	batch "k8s.io/api/batch/v1beta1"
 	core "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -98,7 +98,7 @@ func RemoveCronJobsForMappings(apiclient client.Client, cluster *apis.Elasticsea
 			},
 		}
 		err := apiclient.Delete(context.TODO(), cronjob)
-		if err != nil && !errors.IsNotFound(err) {
+		if err != nil && !apierrors.IsNotFound(err) {
 			log.Error(err, "Failed removing cronjob", "namespace", cluster.Namespace, "name", name)
 		}
 	}
@@ -111,7 +111,7 @@ func ReconcileCurationConfigmap(apiclient client.Client, cluster *apis.Elasticse
 	cluster.AddOwnerRefTo(desired)
 	err := apiclient.Create(context.TODO(), desired)
 	if err != nil {
-		if !errors.IsAlreadyExists(err) {
+		if !apierrors.IsAlreadyExists(err) {
 			return fmt.Errorf("Error creating configmap for cluster %s: %v", cluster.Name, err)
 		}
 		err = retry.RetryOnConflict(retry.DefaultRetry, func() error {
@@ -196,7 +196,7 @@ func ReconcileCurationCronjob(apiclient client.Client, cluster *apis.Elasticsear
 func reconcileCronJob(apiclient client.Client, cluster *apis.Elasticsearch, desired *batch.CronJob, fnAreCronJobsSame func(lhs, rhs *batch.CronJob) bool) error {
 	err := apiclient.Create(context.TODO(), desired)
 	if err != nil {
-		if !errors.IsAlreadyExists(err) {
+		if !apierrors.IsAlreadyExists(err) {
 			return fmt.Errorf("Error creating cronjob for cluster %s: %v", cluster.Name, err)
 		}
 		err = retry.RetryOnConflict(retry.DefaultRetry, func() error {

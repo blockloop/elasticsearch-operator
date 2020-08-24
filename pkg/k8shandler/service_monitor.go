@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -27,7 +27,7 @@ func (er *ElasticsearchRequest) CreateOrUpdateServiceMonitors() error {
 	elasticsearchScMonitor := createServiceMonitor(serviceMonitorName, dpl.Name, dpl.Namespace, labelsWithDefault)
 	addOwnerRefToObject(elasticsearchScMonitor, owner)
 	err := er.client.Create(context.TODO(), elasticsearchScMonitor)
-	if err != nil && !errors.IsAlreadyExists(err) {
+	if err != nil && !apierrors.IsAlreadyExists(err) {
 		return fmt.Errorf("Failure constructing Elasticsearch ServiceMonitor: %v", err)
 	}
 

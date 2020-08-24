@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -759,7 +759,7 @@ func EnforceNetworkPolicy(namespace string, client client.Client, ownerRef []met
 
 	err := client.Create(context.TODO(), &policy)
 	if err != nil {
-		if !errors.IsAlreadyExists(err) {
+		if !apierrors.IsAlreadyExists(err) {
 			return fmt.Errorf("Could not create network policy: %v", err)
 		}
 	}
@@ -772,7 +772,7 @@ func RelaxNetworkPolicy(namespace string, client client.Client) error {
 	policy := newNetworkPolicy(namespace)
 	err := client.Delete(context.TODO(), &policy)
 	if err != nil {
-		if !errors.IsNotFound(err) {
+		if !apierrors.IsNotFound(err) {
 			return fmt.Errorf("Could not delete network policy: %v", err)
 		}
 	}

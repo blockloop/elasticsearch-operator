@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -30,7 +30,7 @@ func createOrUpdateServiceAccount(serviceAccountName, namespace string, ownerRef
 
 	err := client.Create(context.TODO(), serviceAccount)
 	if err != nil {
-		if !errors.IsAlreadyExists(err) {
+		if !apierrors.IsAlreadyExists(err) {
 			return fmt.Errorf("Failure constructing serviceaccount for the Elasticsearch cluster: %v", err)
 		}
 	}

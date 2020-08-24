@@ -5,7 +5,7 @@ import (
 	"reflect"
 
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/util/retry"
 )
@@ -28,7 +28,7 @@ func NewConfigMap(configmapName string, namespace string, data map[string]string
 func (clusterRequest *KibanaRequest) CreateOrUpdateConfigMap(configMap *corev1.ConfigMap) error {
 	err := clusterRequest.Create(configMap)
 	if err != nil {
-		if !errors.IsAlreadyExists(err) {
+		if !apierrors.IsAlreadyExists(err) {
 			return fmt.Errorf("Failure creating configmap: %v", err)
 		}
 
@@ -36,7 +36,7 @@ func (clusterRequest *KibanaRequest) CreateOrUpdateConfigMap(configMap *corev1.C
 
 		retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
 			if err = clusterRequest.Get(configMap.Name, current); err != nil {
-				if errors.IsNotFound(err) {
+				if apierrors.IsNotFound(err) {
 					// the object doesn't exist -- it was likely culled
 					// recreate it on the next time through if necessary
 					return nil
@@ -88,7 +88,7 @@ func (clusterRequest *KibanaRequest) RemoveConfigMap(configmapName string) error
 	)
 
 	err := clusterRequest.Delete(configMap)
-	if err != nil && !errors.IsNotFound(err) {
+	if err != nil && !apierrors.IsNotFound(err) {
 		return fmt.Errorf("Failure deleting %v configmap: %v", configmapName, err)
 	}
 

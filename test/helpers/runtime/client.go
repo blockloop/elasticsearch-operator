@@ -3,7 +3,7 @@ package runtime
 import (
 	"context"
 
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -15,8 +15,8 @@ type FakeClient struct {
 	updated []runtime.Object
 }
 
-func NewAlreadyExistsException() *errors.StatusError {
-	return errors.NewAlreadyExists(schema.GroupResource{}, "existingname")
+func NewAlreadyExistsException() *apierrors.StatusError {
+	return apierrors.NewAlreadyExists(schema.GroupResource{}, "existingname")
 }
 
 func NewFakeClient(client client.Client, err error) *FakeClient {

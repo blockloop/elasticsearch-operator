@@ -7,7 +7,7 @@ import (
 
 	"github.com/openshift/elasticsearch-operator/pkg/log"
 	"github.com/openshift/elasticsearch-operator/pkg/utils"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/util/retry"
 
 	consolev1 "github.com/openshift/api/console/v1"
@@ -54,7 +54,7 @@ func (clusterRequest *KibanaRequest) GetRouteURL(routeName string) (string, erro
 	foundRoute := &route.Route{}
 
 	if err := clusterRequest.Get(routeName, foundRoute); err != nil {
-		if !errors.IsNotFound(err) {
+		if !apierrors.IsNotFound(err) {
 			log.Error(err, "Failed to check for kibana object")
 		}
 		return "", err
@@ -74,7 +74,7 @@ func (clusterRequest *KibanaRequest) RemoveRoute(routeName string) error {
 	)
 
 	err := clusterRequest.Delete(route)
-	if err != nil && !errors.IsNotFound(err) {
+	if err != nil && !apierrors.IsNotFound(err) {
 		return fmt.Errorf("Failure deleting %v route %v", routeName, err)
 	}
 
@@ -85,7 +85,7 @@ func (clusterRequest *KibanaRequest) CreateOrUpdateRoute(newRoute *route.Route) 
 
 	err := clusterRequest.Create(newRoute)
 	if err != nil {
-		if !errors.IsAlreadyExists(err) {
+		if !apierrors.IsAlreadyExists(err) {
 			return fmt.Errorf("Failure creating route for %q: %v", clusterRequest.cluster.Name, err)
 		}
 
@@ -122,7 +122,7 @@ func (clusterRequest *KibanaRequest) createOrUpdateKibanaRoute() error {
 	utils.AddOwnerRefToObject(kibanaRoute, getOwnerRef(cluster))
 
 	if err := clusterRequest.CreateOrUpdateRoute(kibanaRoute); err != nil {
-		if !errors.IsAlreadyExists(err) {
+		if !apierrors.IsAlreadyExists(err) {
 			return fmt.Errorf("Failure creating Kibana route for %q: %v", cluster.Name, err)
 		}
 	}
@@ -151,14 +151,14 @@ func (clusterRequest *KibanaRequest) createOrUpdateKibanaConsoleLink() error {
 func (clusterRequest *KibanaRequest) createOrUpdateConsoleLink(desired *consolev1.ConsoleLink) error {
 	linkName := desired.GetName()
 	err := clusterRequest.Create(desired)
-	if err != nil && !errors.IsAlreadyExists(err) {
+	if err != nil && !apierrors.IsAlreadyExists(err) {
 		return fmt.Errorf("Failure creating Kibana link for %q: %v", clusterRequest.cluster.GetName(), err)
 	}
 
 	return retry.RetryOnConflict(retry.DefaultRetry, func() error {
 		current := &consolev1.ConsoleLink{}
 		if err := clusterRequest.Get(linkName, current); err != nil {
-			if errors.IsNotFound(err) {
+			if apierrors.IsNotFound(err) {
 				return nil
 			}
 			return fmt.Errorf("Failed to get Kibana console link: %v", err)
@@ -205,7 +205,7 @@ func (clusterRequest *KibanaRequest) createOrUpdateKibanaConsoleExternalLogLink(
 	}
 
 	err = clusterRequest.Create(consoleExternalLogLink)
-	if err != nil && !errors.IsAlreadyExists(err) {
+	if err != nil && !apierrors.IsAlreadyExists(err) {
 		return fmt.Errorf("Failure creating Kibana console external log link for %q: %v", cluster.Name, err)
 	}
 	return nil
@@ -216,19 +216,19 @@ func (clusterRequest *KibanaRequest) removeSharedConfigMapPre45x() error {
 
 	sharedConfig := NewConfigMap("sharing-config", cluster.GetNamespace(), map[string]string{})
 	err := clusterRequest.Delete(sharedConfig)
-	if err != nil && !errors.IsNotFound(err) {
+	if err != nil && !apierrors.IsNotFound(err) {
 		return fmt.Errorf("Failure deleting Kibana route shared config: %v", err)
 	}
 
 	sharedRole := NewRole("sharing-config-reader", cluster.Namespace, nil)
 	err = clusterRequest.Delete(sharedRole)
-	if err != nil && !errors.IsNotFound(err) {
+	if err != nil && !apierrors.IsNotFound(err) {
 		return fmt.Errorf("Failure deleting Kibana route shared config role %q for %q: %v", sharedRole.Name, cluster.Name, err)
 	}
 
 	sharedRoleBinding := NewRoleBinding("openshift-logging-sharing-config-reader-binding", cluster.Namespace, "", nil)
 	err = clusterRequest.Delete(sharedRoleBinding)
-	if err != nil && !errors.IsNotFound(err) {
+	if err != nil && !apierrors.IsNotFound(err) {
 		return fmt.Errorf("Failure deleting Kibana route shared config role binding %q for %q: %v", sharedRoleBinding.Name, cluster.Name, err)
 	}
 

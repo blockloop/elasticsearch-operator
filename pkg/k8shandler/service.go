@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/util/retry"
@@ -98,14 +98,14 @@ func createOrUpdateService(serviceName, namespace, clusterName, targetPortName s
 
 	err := client.Create(context.TODO(), service)
 	if err != nil {
-		if !errors.IsAlreadyExists(err) {
+		if !apierrors.IsAlreadyExists(err) {
 			return fmt.Errorf("Failure constructing %v service: %v", service.Name, err)
 		}
 
 		current := service.DeepCopy()
 		retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
 			if err = client.Get(context.TODO(), types.NamespacedName{Name: current.Name, Namespace: current.Namespace}, current); err != nil {
-				if errors.IsNotFound(err) {
+				if apierrors.IsNotFound(err) {
 					// the object doesn't exist -- it was likely culled
 					// recreate it on the next time through if necessary
 					return nil

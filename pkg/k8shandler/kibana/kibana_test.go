@@ -15,7 +15,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -216,17 +216,17 @@ var _ = Describe("Reconciling", func() {
 				// Check old shared config map is deleted
 				key = types.NamespacedName{Name: "sharing-config", Namespace: cluster.GetNamespace()}
 				gotCmPre44x := &corev1.ConfigMap{}
-				Expect(errors.IsNotFound(client.Get(context.TODO(), key, gotCmPre44x))).To(BeTrue())
+				Expect(apierrors.IsNotFound(client.Get(context.TODO(), key, gotCmPre44x))).To(BeTrue())
 
 				// Check old role to access the shared config map is deleted
 				key = types.NamespacedName{Name: "sharing-config-reader", Namespace: cluster.GetNamespace()}
 				gotRolePre45x := &rbacv1.Role{}
-				Expect(errors.IsNotFound(client.Get(context.TODO(), key, gotRolePre45x))).To(BeTrue())
+				Expect(apierrors.IsNotFound(client.Get(context.TODO(), key, gotRolePre45x))).To(BeTrue())
 
 				// Check old rolebinding for group system:autheticated is deleted
 				key = types.NamespacedName{Name: "openshift-logging-sharing-config-reader-binding", Namespace: cluster.GetNamespace()}
 				gotRoleBindingPre45x := &rbacv1.RoleBinding{}
-				Expect(errors.IsNotFound(client.Get(context.TODO(), key, gotRoleBindingPre45x))).To(BeTrue())
+				Expect(apierrors.IsNotFound(client.Get(context.TODO(), key, gotRoleBindingPre45x))).To(BeTrue())
 			})
 		})
 

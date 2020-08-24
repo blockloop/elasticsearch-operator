@@ -12,7 +12,7 @@ import (
 	"github.com/openshift/elasticsearch-operator/pkg/log"
 
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -73,7 +73,7 @@ func WaitForPods(t *testing.T, f *test.Framework, namespace string, labels map[s
 		}
 		err := f.Client.Client.List(context.TODO(), pods, opts...)
 		if err != nil {
-			if errors.IsNotFound(err) {
+			if apierrors.IsNotFound(err) {
 				return false, err
 			}
 			return false, nil
@@ -98,7 +98,7 @@ func WaitForRolloutComplete(t *testing.T, f *test.Framework, namespace string, l
 	err := wait.Poll(retryInterval, timeout, func() (done bool, err error) {
 		err = f.Client.Client.List(context.TODO(), pods, opts...)
 		if err != nil {
-			if errors.IsNotFound(err) {
+			if apierrors.IsNotFound(err) {
 				t.Logf("Waiting for availability of pods with labels: %v in Namespace: %s \n", labels, namespace)
 				return false, nil
 			}
@@ -145,7 +145,7 @@ func WaitForNodeStatusCondition(t *testing.T, f *test.Framework, namespace, name
 	err := wait.Poll(retryInterval, timeout, func() (done bool, err error) {
 		err = f.Client.Get(context.TODO(), elasticsearchName, elasticsearchCR)
 		if err != nil {
-			if errors.IsNotFound(err) {
+			if apierrors.IsNotFound(err) {
 				t.Logf("Waiting for availability of %s elasticsearch\n", name)
 				return false, nil
 			}
@@ -185,7 +185,7 @@ func WaitForClusterStatusCondition(t *testing.T, f *test.Framework, namespace, n
 	err := wait.Poll(retryInterval, timeout, func() (done bool, err error) {
 		err = f.Client.Get(context.TODO(), elasticsearchName, elasticsearchCR)
 		if err != nil {
-			if errors.IsNotFound(err) {
+			if apierrors.IsNotFound(err) {
 				t.Logf("Waiting for availability of %s elasticsearch\n", name)
 				return false, nil
 			}
@@ -219,7 +219,7 @@ func WaitForReadyDeployment(t *testing.T, kubeclient kubernetes.Interface, names
 	err := wait.Poll(retryInterval, timeout, func() (done bool, err error) {
 		deployment, err := kubeclient.AppsV1().Deployments(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 		if err != nil {
-			if errors.IsNotFound(err) {
+			if apierrors.IsNotFound(err) {
 				t.Logf("Waiting for availability of Deployment: %s in Namespace: %s \n", name, namespace)
 				return false, nil
 			}
@@ -244,7 +244,7 @@ func WaitForStatefulset(t *testing.T, kubeclient kubernetes.Interface, namespace
 	err := wait.Poll(retryInterval, timeout, func() (done bool, err error) {
 		statefulset, err := kubeclient.AppsV1().StatefulSets(namespace).Get(context.TODO(), name, metav1.GetOptions{})
 		if err != nil {
-			if errors.IsNotFound(err) {
+			if apierrors.IsNotFound(err) {
 				t.Logf("Waiting for availability of %s statefulset\n", name)
 				return false, nil
 			}

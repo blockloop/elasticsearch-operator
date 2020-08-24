@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	loggingv1 "github.com/openshift/elasticsearch-operator/pkg/apis/logging/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -15,7 +15,7 @@ func GetElasticsearchCR(c client.Client, ns string) (*loggingv1.Elasticsearch, e
 	opts := &client.ListOptions{Namespace: ns}
 
 	if err := c.List(context.TODO(), esl, opts); err != nil {
-		if errors.IsNotFound(err) {
+		if apierrors.IsNotFound(err) {
 			return nil, err
 		}
 
@@ -27,7 +27,7 @@ func GetElasticsearchCR(c client.Client, ns string) (*loggingv1.Elasticsearch, e
 			Group:    loggingv1.SchemeGroupVersion.Group,
 			Resource: "Elasticsearch",
 		}
-		return nil, errors.NewNotFound(gr, "elasticsearch")
+		return nil, apierrors.NewNotFound(gr, "elasticsearch")
 	}
 
 	return &esl.Items[0], nil

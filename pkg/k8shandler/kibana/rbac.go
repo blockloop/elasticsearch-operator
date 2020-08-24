@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/openshift/elasticsearch-operator/pkg/utils"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
 	rbac "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -109,7 +109,7 @@ func (clusterRequest *KibanaRequest) CreateClusterRole(name string, rules []rbac
 	utils.AddOwnerRefToObject(clusterRole, getOwnerRef(clusterRequest.cluster))
 
 	err := clusterRequest.Create(clusterRole)
-	if err != nil && !errors.IsAlreadyExists(err) {
+	if err != nil && !apierrors.IsAlreadyExists(err) {
 		return nil, fmt.Errorf("Failure creating '%s' clusterrole: %v", name, err)
 	}
 	return clusterRole, nil
@@ -125,7 +125,7 @@ func (clusterRequest *KibanaRequest) RemoveClusterRoleBinding(name string) error
 	)
 
 	err := clusterRequest.Delete(binding)
-	if err != nil && !errors.IsNotFound(err) {
+	if err != nil && !apierrors.IsNotFound(err) {
 		return fmt.Errorf("Failure deleting %q clusterrolebinding: %v", name, err)
 	}
 

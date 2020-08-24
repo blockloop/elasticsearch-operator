@@ -6,7 +6,7 @@ import (
 	"github.com/openshift/elasticsearch-operator/pkg/constants"
 	"github.com/openshift/elasticsearch-operator/pkg/utils"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 )
 
 /*
@@ -29,13 +29,13 @@ func (clusterRequest *KibanaRequest) createOrGetTrustedCABundleConfigMap(name st
 
 	err := clusterRequest.Create(configMap)
 	if err != nil {
-		if !errors.IsAlreadyExists(err) {
+		if !apierrors.IsAlreadyExists(err) {
 			return nil, fmt.Errorf("failed to create trusted CA bundle config map %q for %q: %s", name, clusterRequest.cluster.Name, err)
 		}
 
 		// Get the existing config map which may include an injected CA bundle
 		if err = clusterRequest.Get(configMap.Name, configMap); err != nil {
-			if errors.IsNotFound(err) {
+			if apierrors.IsNotFound(err) {
 				// the object doesn't exist -- it was likely culled
 				// recreate it on the next time through if necessary
 				return nil, fmt.Errorf("failed to find trusted CA bundle config map %q for %q: %s", name, clusterRequest.cluster.Name, err)

@@ -6,7 +6,7 @@ import (
 
 	"github.com/openshift/elasticsearch-operator/pkg/log"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -24,10 +24,10 @@ func createOrUpdatePersistentVolumeClaim(pvc v1.PersistentVolumeClaimSpec, newNa
 	if err == nil {
 		return nil
 	}
-	if errors.IsNotFound(err) {
+	if apierrors.IsNotFound(err) {
 		claim = createPersistentVolumeClaim(newName, namespace, pvc)
 		err := client.Create(context.TODO(), claim)
-		if err == nil || errors.IsAlreadyExists(err) {
+		if err == nil || apierrors.IsAlreadyExists(err) {
 			return nil
 		}
 		return fmt.Errorf("unable to create PVC: %w", err)

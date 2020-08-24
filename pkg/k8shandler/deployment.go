@@ -7,7 +7,7 @@ import (
 
 	"github.com/openshift/elasticsearch-operator/pkg/elasticsearch"
 
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/util/retry"
@@ -139,7 +139,7 @@ func (node *deploymentNode) create() error {
 	if node.self.ObjectMeta.ResourceVersion == "" {
 		err := node.client.Create(context.TODO(), &node.self)
 		if err != nil {
-			if !errors.IsAlreadyExists(err) {
+			if !apierrors.IsAlreadyExists(err) {
 				return fmt.Errorf("Could not create node resource: %v", err)
 			} else {
 				return node.pause()
@@ -334,7 +334,7 @@ func (node *deploymentNode) waitForNodeLeaveCluster() (error, bool) {
 func (node *deploymentNode) isMissing() bool {
 	getNode := &apps.Deployment{}
 	if getErr := node.client.Get(context.TODO(), types.NamespacedName{Name: node.name(), Namespace: node.self.Namespace}, getNode); getErr != nil {
-		if errors.IsNotFound(getErr) {
+		if apierrors.IsNotFound(getErr) {
 			return true
 		}
 	}

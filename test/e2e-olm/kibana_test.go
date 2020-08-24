@@ -11,7 +11,7 @@ import (
 	"github.com/openshift/elasticsearch-operator/test/utils"
 	framework "github.com/operator-framework/operator-sdk/pkg/test"
 	"github.com/operator-framework/operator-sdk/pkg/test/e2eutil"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -96,7 +96,7 @@ func waitForObject(t *testing.T, client framework.FrameworkClient, key types.Nam
 	return wait.Poll(retryInterval, timeout, func() (done bool, err error) {
 		err = client.Get(goctx.TODO(), key, obj)
 		if err != nil {
-			if errors.IsNotFound(err) {
+			if apierrors.IsNotFound(err) {
 				return true, err
 			}
 			return false, nil

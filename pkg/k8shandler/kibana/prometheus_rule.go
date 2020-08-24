@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/openshift/elasticsearch-operator/pkg/utils"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -32,7 +32,7 @@ func (clusterRequest *KibanaRequest) RemovePrometheusRule(ruleName string) error
 	promRule := NewPrometheusRule(ruleName, clusterRequest.cluster.Namespace)
 
 	err := clusterRequest.Delete(promRule)
-	if err != nil && !errors.IsNotFound(err) {
+	if err != nil && !apierrors.IsNotFound(err) {
 		return fmt.Errorf("Failure deleting %v prometheus rule: %v", promRule, err)
 	}
 

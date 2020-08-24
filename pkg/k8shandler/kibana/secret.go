@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sort"
 
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/openshift/elasticsearch-operator/pkg/log"
 	"github.com/openshift/elasticsearch-operator/pkg/utils"
@@ -27,7 +27,7 @@ var secretCertificates = map[string]map[string]string{
 func (clusterRequest *KibanaRequest) GetSecret(secretName string) (*core.Secret, error) {
 	secret := &core.Secret{}
 	if err := clusterRequest.Get(secretName, secret); err != nil {
-		if errors.IsNotFound(err) {
+		if apierrors.IsNotFound(err) {
 			return nil, err
 		}
 		return nil, fmt.Errorf("Failed to get %v secret: %v", secret.Name, err)
@@ -51,7 +51,7 @@ func (clusterRequest *KibanaRequest) extractCertificates(secretName string, cert
 
 	for secretKey, certPath := range certs {
 		if err = clusterRequest.extractSecretToFile(secretName, secretKey, certPath); err != nil {
-			if errors.IsNotFound(err) {
+			if apierrors.IsNotFound(err) {
 				return nil
 			}
 			return
@@ -64,7 +64,7 @@ func (clusterRequest *KibanaRequest) extractCertificates(secretName string, cert
 func (clusterRequest *KibanaRequest) extractSecretToFile(secretName string, key string, toFile string) (err error) {
 	secret, err := clusterRequest.GetSecret(secretName)
 	if err != nil {
-		if errors.IsNotFound(err) {
+		if apierrors.IsNotFound(err) {
 			return err
 		}
 		return fmt.Errorf("Unable to extract secret %s to file: %v", secretName, err)

@@ -8,7 +8,7 @@ import (
 	"os"
 
 	"github.com/openshift/elasticsearch-operator/pkg/utils"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/util/retry"
 
@@ -40,7 +40,7 @@ func (er *ElasticsearchRequest) CreateOrUpdatePrometheusRules() error {
 	if err == nil {
 		return nil
 	}
-	if !errors.IsAlreadyExists(err) {
+	if !apierrors.IsAlreadyExists(err) {
 		return fmt.Errorf("failed to create prometheus rule: %w", err)
 	}
 

@@ -18,7 +18,7 @@ import (
 	"github.com/openshift/elasticsearch-operator/pkg/k8shandler/kibana"
 	"github.com/openshift/elasticsearch-operator/pkg/log"
 	"github.com/openshift/elasticsearch-operator/pkg/utils"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -133,7 +133,7 @@ func (r *ReconcileKibana) Reconcile(request reconcile.Request) (reconcile.Result
 
 	err := r.client.Get(context.TODO(), key, kibanaInstance)
 	if err != nil {
-		if errors.IsNotFound(err) {
+		if apierrors.IsNotFound(err) {
 			// the CR no longer exists, since it will be cleaned up by the scheduler we don't want to trigger an event for it
 			unregisterKibanaNamespacedName(request)
 			return reconcile.Result{}, nil

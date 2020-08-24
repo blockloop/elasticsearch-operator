@@ -3,7 +3,7 @@ package kibana
 import (
 	"fmt"
 
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
 	consolev1 "github.com/openshift/api/console/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -42,7 +42,7 @@ func (clusterRequest *KibanaRequest) RemoveConsoleExternalLogLink(resourceName s
 	)
 
 	err = clusterRequest.Delete(consoleExternalLogLink)
-	if err != nil && !errors.IsNotFound(err) {
+	if err != nil && !apierrors.IsNotFound(err) {
 		return fmt.Errorf("Failure deleting %v ConsoleExternalLogLink %v", resourceName, err)
 	}
 	return nil

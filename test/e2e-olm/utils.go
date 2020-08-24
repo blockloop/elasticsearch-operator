@@ -15,7 +15,7 @@ import (
 	"github.com/operator-framework/operator-sdk/pkg/test"
 
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -140,7 +140,7 @@ func updateElasticsearchSpec(t *testing.T, f *test.Framework, desired *loggingv1
 		key := client.ObjectKey{Name: desired.GetName(), Namespace: desired.GetNamespace()}
 
 		if err := f.Client.Get(context.TODO(), key, current); err != nil {
-			if errors.IsNotFound(err) {
+			if apierrors.IsNotFound(err) {
 				// Stop retry because CR not found
 				return false, err
 			}
@@ -154,7 +154,7 @@ func updateElasticsearchSpec(t *testing.T, f *test.Framework, desired *loggingv1
 		t.Logf("Update Spec: %#v", current.Spec)
 
 		if err := f.Client.Update(context.TODO(), current); err != nil {
-			if errors.IsConflict(err) {
+			if apierrors.IsConflict(err) {
 				// Retry update because resource needs to get updated
 				return false, nil
 			}
